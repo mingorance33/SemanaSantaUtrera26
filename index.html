@@ -54,7 +54,6 @@
             opacity: 1;
         }
 
-        /* Clase para ocultar el panel a la derecha */
         #panel.oculto {
             transform: translateX(120%);
             opacity: 0;
@@ -135,23 +134,12 @@
         function toggleMenu() {
             const panel = document.getElementById('panel');
             const btn = document.getElementById('btn-toggle-menu');
-            
             panel.classList.toggle('oculto');
-            
-            // Cambiamos el texto del botón según el estado
-            if (panel.classList.contains('oculto')) {
-                btn.innerHTML = '☰ Menú';
-            } else {
-                btn.innerHTML = '✖ Cerrar';
-            }
+            btn.innerHTML = panel.classList.contains('oculto') ? '☰ Menú' : '✖ Cerrar';
         }
 
         // --- Definición de Capas Base ---
-        const capaOSM = new ol.layer.Tile({
-            source: new ol.source.OSM(),
-            visible: true 
-        });
-
+        const capaOSM = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
         const capaSatelite = new ol.layer.Tile({
             source: new ol.source.XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
@@ -162,11 +150,6 @@
         });
 
         // --- Configuración Inicial del Mapa ---
-        const templos = [
-            { nombre: "Capilla Trinidad", coord: [-5.7843273, 37.1774404] },
-            { nombre: "Santuario Consolación", coord: [-5.76600, 37.19000] }
-        ];
-
         const map = new ol.Map({
             target: 'map',
             layers: [ capaOSM, capaSatelite ],
@@ -174,22 +157,18 @@
         });
 
         const rutaSource = new ol.source.Vector();
-        const rutaLayer = new ol.layer.Vector({ source: rutaSource });
+        const rutaLayer = new ol.layer.Vector({ source: rutaSource, zIndex: 2 });
         map.addLayer(rutaLayer);
 
-        const temploSource = new ol.source.Vector();
-        const temploLayer = new ol.layer.Vector({ source: temploSource });
-        map.addLayer(temploLayer);
-
-        // Marcadores de Templos
-        templos.forEach(templo => {
-            const feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(templo.coord)) });
-            feature.setStyle(new ol.style.Style({
-                image: new ol.style.Circle({ radius: 7, fill: new ol.style.Fill({ color: '#5c2040' }), stroke: new ol.style.Stroke({ color: 'white', width: 2 }) }),
-                text: new ol.style.Text({ text: templo.nombre, offsetY: -18, fill: new ol.style.Fill({ color: '#000' }), backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.8)' }), padding: [2, 5, 2, 5], font: 'bold 12px Segoe UI' })
-            }));
-            temploSource.addFeature(feature);
-        });
+        // --- Diccionario de Hitos (Horarios y Puntos Clave) ---
+        // Aquí puedes ir añadiendo los horarios de cada nueva hermandad
+        const hitosRutas = {
+            'trinidad': [
+                { texto: 'Salida: 11:00 h\nRecogida: 14:15 h', coord: [-5.7843273, 37.1774404] }, // Capilla Trinidad
+                { texto: 'Ayuntamiento: 12:30 h', coord: [-5.7815418, 37.1832707] },            // Ayuntamiento extraído del KML
+                { texto: 'C. Oficial: 12:50 h', coord: [-5.7817818, 37.1815697] }               // Carrera Oficial extraída del KML
+            ]
+        };
 
         // --- Función para cambiar el tipo de mapa ---
         function cambiarCapa(tipo) {
@@ -207,7 +186,7 @@
             }
         }
 
-        // --- Lógica: Cargar JSON Remoto y Dibujar ---
+        // --- Lógica: Cargar JSON Remoto, Dibujar Línea, Flechas e HITOS ---
         async function cargarYdibujarRuta(archivoJson, color) {
             rutaSource.clear();
 
@@ -216,17 +195,18 @@
                 if (!respuesta.ok) throw new Error("Archivo no encontrado");
                 
                 const coordenadasCrudas = await respuesta.json();
-                
                 const coordenadas = coordenadasCrudas.map(coord => ol.proj.fromLonLat(coord));
                 const linea = new ol.geom.LineString(coordenadas);
-                const feature = new ol.Feature({ geometry: linea });
+                const featureLinea = new ol.Feature({ geometry: linea });
 
+                // 1. Estilo de la línea principal
                 const estilos = [
                     new ol.style.Style({
                         stroke: new ol.style.Stroke({ color: color, width: 5 })
                     })
                 ];
 
+                // 2. Añadir flechas direccionales
                 linea.forEachSegment(function(start, end) {
                     const dx = end[0] - start[0];
                     const dy = end[1] - start[1];
@@ -248,12 +228,40 @@
                     }
                 });
 
-                feature.setStyle(estilos);
-                rutaSource.addFeature(feature);
+                featureLinea.setStyle(estilos);
+                rutaSource.addFeature(featureLinea);
 
-                map.getView().fit(linea, { padding: [50, 50, 50, 50], duration: 1000 });
+                // 3. Añadir los HITOS (Horarios) si existen para esta ruta
+                if (hitosRutas[archivoJson]) {
+                    hitosRutas[archivoJson].forEach(hito => {
+                        const featureHito = new ol.Feature({
+                            geometry: new ol.geom.Point(ol.proj.fromLonLat(hito.coord))
+                        });
 
-                // Ocultamos el menú automáticamente al cargar una ruta
+                        featureHito.setStyle(new ol.style.Style({
+                            // Un pequeño círculo blanco con el borde del color de la hermandad
+                            image: new ol.style.Circle({
+                                radius: 5,
+                                fill: new ol.style.Fill({ color: '#ffffff' }),
+                                stroke: new ol.style.Stroke({ color: color, width: 2 })
+                            }),
+                            // El texto con el horario
+                            text: new ol.style.Text({
+                                text: hito.texto,
+                                offsetY: -20, // Lo subimos para que no tape el punto
+                                fill: new ol.style.Fill({ color: '#ffffff' }),
+                                backgroundFill: new ol.style.Fill({ color: color }),
+                                padding: [4, 8, 4, 8],
+                                font: 'bold 12px Segoe UI, sans-serif'
+                            })
+                        }));
+                        rutaSource.addFeature(featureHito);
+                    });
+                }
+
+                // Centrar cámara
+                map.getView().fit(linea, { padding: [60, 60, 60, 60], duration: 1000 });
+
                 if (!document.getElementById('panel').classList.contains('oculto')) {
                     toggleMenu();
                 }
