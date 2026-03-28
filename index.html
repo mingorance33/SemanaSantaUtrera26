@@ -3,103 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recorridos Semana Santa Utrera 2026</title>
+    <title>Utrera Sacra: Itinerarios de Semana Santa 2026</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; }
+        :root {
+            --primary-color: #5c2040; /* Color corporativo: Burdeos Cofrade */
+            --bg-panel: rgba(20, 20, 20, 0.9);
+            --text-color: #f0f0f0;
+        }
+
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
         #map { width: 100%; height: 100vh; }
+
+        /* Estilo del Panel Lateral */
         #panel {
             position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            top: 10px;
+            right: 10px;
+            background: var(--bg-panel);
+            color: var(--text-color);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             z-index: 1000;
-            max-width: 250px;
+            max-width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        h2 { margin-top: 0; font-size: 18px; color: #333; }
-        button { 
-            display: block; width: 100%; margin-bottom: 8px; padding: 8px;
-            background-color: #5c2040; color: white; border: none;
-            border-radius: 4px; cursor: pointer; font-weight: bold;
+
+        #panel h1 { margin-top: 0; font-size: 22px; color: white; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        #panel h2 { font-size: 16px; margin-top: 20px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Estilo de los Botones */
+        .btn-ruta {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 12px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            text-align: left;
+            transition: all 0.2s ease;
         }
-        button:hover { background-color: #3d152a; }
+
+        .btn-ruta:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .btn-ruta .color-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            border: 2px solid white;
+        }
+
+        .btn-clear {
+            background-color: #333;
+            color: #aaa;
+            margin-top: 20px;
+        }
+        .btn-clear:hover { background-color: #444; color: white; }
+
     </style>
 </head>
 <body>
 
     <div id="panel">
-        <h2>Días y Hermandades</h2>
-        <button onclick="dibujarRuta('trinidad', '#ff0000')">Dom. Ramos: La Trinidad</button>
-        <button onclick="dibujarRuta('quinta', '#800080')">Dom. Ramos: Quinta Angustia</button>
-        <button onclick="limpiarMapa()">Limpiar Mapa</button>
+        <h1>Utrera Sacra</h1>
+        <p style="font-size: 12px; text-align: center; color: #999;">Itinerarios Oficiales 2026</p>
+        
+        <h2>Domingo de Ramos</h2>
+        <button class="btn-ruta" onclick="dibujarRuta('trinidad', '#CC0000')">
+            <div class="color-indicator" style="background-color: #CC0000;"></div>
+            La Trinidad (Borriquita)
+        </button>
+        <button class="btn-ruta" onclick="dibujarRuta('quinta', '#800080')">
+            <div class="color-indicator" style="background-color: #800080;"></div>
+            Quinta Angustia
+        </button>
+
+        <h2>Lunes Santo</h2>
+        <button class="btn-ruta" onclick="dibujarRuta('muchachos', '#000080')">
+            <div class="color-indicator" style="background-color: #000080;"></div>
+            Muchachos de Consolación
+        </button>
+
+        <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
     </div>
 
     <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
     <script>
-        // 1. Definir los puntos (Longitud, Latitud) de los recorridos
-        // Nota: Estas coordenadas son un esbozo para que veas cómo funciona.
+        // 1. Definición de Rutas Esquivmáticas (coordenadas para rellenar)
         const rutas = {
-            trinidad: [
-                [-5.78326, 37.17685], // Capilla Trinidad
-                [-5.78015, 37.17950], // Calle San Fernando
-                [-5.78250, 37.18150], // Plaza del Altozano (Carrera Oficial)
-                [-5.78300, 37.18000], // Ayuntamiento
-                [-5.78326, 37.17685]  // Vuelta a Trinidad
-            ],
-            quinta: [
-                [-5.78010, 37.18200], // Parroquia Santa María
-                [-5.77900, 37.18000], // Sor Marciala / Marcos Pérez
-                [-5.78250, 37.18150], // Plaza del Altozano
-                [-5.78010, 37.18200]  // Vuelta a Santa María
-            ]
+            trinidad: [ [-5.78326, 37.17685], [-5.78015, 37.17950], [-5.78250, 37.18150], [-5.78300, 37.18000], [-5.78326, 37.17685] ],
+            quinta: [ [-5.78010, 37.18200], [-5.77900, 37.18000], [-5.78250, 37.18150], [-5.78010, 37.18200] ],
+            muchachos: [ [-5.76600, 37.19000], [-5.78015, 37.17950], [-5.78250, 37.18150], [-5.78300, 37.18000], [-5.76600, 37.19000] ]
         };
 
-        // 2. Inicializar el mapa centrado en Utrera
+        // 2. Definición de Templos Clave (Marcadores)
+        const templos = [
+            { nombre: "Cplla. Trinidad", coord: [-5.78326, 37.17685] },
+            { nombre: "Parroquia Sta. María", coord: [-5.78010, 37.18200] },
+            { nombre: "Parroquia Santiago", coord: [-5.78181, 37.17888] },
+            { nombre: "Cplla. San Francisco", coord: [-5.78250, 37.18150] }, // Plaza Altozano
+            { nombre: "Cplla. San Bartolomé", coord: [-5.7805, 37.1746] },
+            { nombre: "Santuario Consolación", coord: [-5.76600, 37.19000] }
+        ];
+
+        // 3. Inicializar el mapa con estilo elegante (Toner)
         const map = new ol.Map({
             target: 'map',
             layers: [
                 new ol.layer.Tile({
-                    source: new ol.source.OSM() // Usamos OpenStreetMap como base
+                    source: new ol.source.XYZ({
+                        url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', // Estilo Toner B&W
+                        attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.1">CC BY 3.1</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
+                    })
                 })
             ],
             view: new ol.View({
-                center: ol.proj.fromLonLat([-5.783, 37.180]), // Centro de Utrera
-                zoom: 15.5 // Nivel de zoom adecuado para el pueblo
+                center: ol.proj.fromLonLat([-5.783, 37.180]),
+                zoom: 15
             })
         });
 
-        // 3. Crear una capa para dibujar las líneas
-        const vectorSource = new ol.source.Vector();
-        const vectorLayer = new ol.layer.Vector({
-            source: vectorSource
+        // 4. Capas vectoriales (para líneas y marcadores)
+        const rutaSource = new ol.source.Vector();
+        const rutaLayer = new ol.layer.Vector({ source: rutaSource });
+        map.addLayer(rutaLayer);
+
+        const temploSource = new ol.source.Vector();
+        const temploLayer = new ol.layer.Vector({ source: temploSource });
+        map.addLayer(temploLayer);
+
+        // 5. Añadir Marcadores de Templos
+        templos.forEach(templo => {
+            const feature = new ol.Feature({
+                geometry: new ol.geom.Point(ol.proj.fromLonLat(templo.coord)),
+                name: templo.nombre
+            });
+
+            feature.setStyle(new ol.style.Style({
+                image: new ol.style.Circle({
+                    radius: 6,
+                    fill: new ol.style.Fill({ color: '#5c2040' }),
+                    stroke: new ol.style.Stroke({ color: 'white', width: 2 })
+                }),
+                text: new ol.style.Text({
+                    text: templo.nombre,
+                    offsetY: -15,
+                    fill: new ol.style.Fill({ color: '#333' }),
+                    backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.8)' }),
+                    padding: [2, 4, 2, 4]
+                })
+            }));
+
+            temploSource.addFeature(feature);
         });
-        map.addLayer(vectorLayer);
 
-        // 4. Funciones para la interactividad
+        // 6. Funciones de Interactividad
         function dibujarRuta(hermandad, color) {
-            vectorSource.clear(); // Limpia la ruta anterior para no saturar
+            rutaSource.clear(); 
 
-            // Convertir coordenadas al formato que usa OpenLayers
+            if (!rutas[hermandad]) return;
+
             const coordenadas = rutas[hermandad].map(coord => ol.proj.fromLonLat(coord));
-            
             const linea = new ol.geom.LineString(coordenadas);
             const feature = new ol.Feature({ geometry: linea });
             
-            // Aplicar estilo (color y grosor)
             feature.setStyle(new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: color, width: 4 })
+                stroke: new ol.style.Stroke({ color: color, width: 5 }) // Línea más gruesa
             }));
 
-            vectorSource.addFeature(feature);
+            rutaSource.addFeature(feature);
         }
 
         function limpiarMapa() {
-            vectorSource.clear();
+            rutaSource.clear();
         }
     </script>
 </body>
