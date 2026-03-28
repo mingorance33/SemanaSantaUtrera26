@@ -117,16 +117,17 @@
         map.addLayer(rutaLayer);
 
         // --- DICCIONARIO DE HITOS (Horarios y Puntos Clave) ---
+        // --- DICCIONARIO DE HITOS (Horarios y Puntos Clave) ---
         const hitosRutas = {
             'trinidad': [
                 { texto: 'Salida: 11:00 h\nRecogida: 14:15 h', coord: [-5.7843273, 37.1774404] },
                 { texto: 'Ayuntamiento: 12:30 h', coord: [-5.7815418, 37.1832707] },
                 { texto: 'C. Oficial: 12:50 h', coord: [-5.7817818, 37.1815697] }
             ],
-            // ¡Nuevos horarios exactos de la Oración en el Huerto añadidos aquí!
             'huerto': [
-                { texto: 'Salida: 17:30 h\nRecogida: 22:00 h', coord: [-5.7781743, 37.1815953] }, // Capilla San Bartolomé
-                { texto: 'P. Santa María: 18:25 h', coord: [-5.7804615, 37.1793247] },
+                { texto: 'Salida: 17:30 h\nRecogida: 22:00 h', coord: [-5.7781743, 37.1815953] },
+                // 👇 Esta es la única línea que ha cambiado 👇
+                { texto: 'P. Santa María: 18:25 h', coord: [-5.7809228, 37.1795512] },
                 { texto: 'P. Santiago: 18:50 h', coord: [-5.7827085, 37.1808442] },
                 { texto: 'C. Oficial: 19:10 h', coord: [-5.7815954, 37.1815654] },
                 { texto: 'Ayuntamiento: 20:40 h', coord: [-5.7815605, 37.1833113] }
