@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recorridos Semana Santa Utrera 2026</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; font-family: Arial, sans-serif; }
+        #map { width: 100%; height: 100vh; }
+        #panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            z-index: 1000;
+            max-width: 250px;
+        }
+        h2 { margin-top: 0; font-size: 18px; color: #333; }
+        button { 
+            display: block; width: 100%; margin-bottom: 8px; padding: 8px;
+            background-color: #5c2040; color: white; border: none;
+            border-radius: 4px; cursor: pointer; font-weight: bold;
+        }
+        button:hover { background-color: #3d152a; }
+    </style>
+</head>
+<body>
+
+    <div id="panel">
+        <h2>Días y Hermandades</h2>
+        <button onclick="dibujarRuta('trinidad', '#ff0000')">Dom. Ramos: La Trinidad</button>
+        <button onclick="dibujarRuta('quinta', '#800080')">Dom. Ramos: Quinta Angustia</button>
+        <button onclick="limpiarMapa()">Limpiar Mapa</button>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
+    <script>
+        // 1. Definir los puntos (Longitud, Latitud) de los recorridos
+        // Nota: Estas coordenadas son un esbozo para que veas cómo funciona.
+        const rutas = {
+            trinidad: [
+                [-5.78326, 37.17685], // Capilla Trinidad
+                [-5.78015, 37.17950], // Calle San Fernando
+                [-5.78250, 37.18150], // Plaza del Altozano (Carrera Oficial)
+                [-5.78300, 37.18000], // Ayuntamiento
+                [-5.78326, 37.17685]  // Vuelta a Trinidad
+            ],
+            quinta: [
+                [-5.78010, 37.18200], // Parroquia Santa María
+                [-5.77900, 37.18000], // Sor Marciala / Marcos Pérez
+                [-5.78250, 37.18150], // Plaza del Altozano
+                [-5.78010, 37.18200]  // Vuelta a Santa María
+            ]
+        };
+
+        // 2. Inicializar el mapa centrado en Utrera
+        const map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM() // Usamos OpenStreetMap como base
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([-5.783, 37.180]), // Centro de Utrera
+                zoom: 15.5 // Nivel de zoom adecuado para el pueblo
+            })
+        });
+
+        // 3. Crear una capa para dibujar las líneas
+        const vectorSource = new ol.source.Vector();
+        const vectorLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+        map.addLayer(vectorLayer);
+
+        // 4. Funciones para la interactividad
+        function dibujarRuta(hermandad, color) {
+            vectorSource.clear(); // Limpia la ruta anterior para no saturar
+
+            // Convertir coordenadas al formato que usa OpenLayers
+            const coordenadas = rutas[hermandad].map(coord => ol.proj.fromLonLat(coord));
+            
+            const linea = new ol.geom.LineString(coordenadas);
+            const feature = new ol.Feature({ geometry: linea });
+            
+            // Aplicar estilo (color y grosor)
+            feature.setStyle(new ol.style.Style({
+                stroke: new ol.style.Stroke({ color: color, width: 4 })
+            }));
+
+            vectorSource.addFeature(feature);
+        }
+
+        function limpiarMapa() {
+            vectorSource.clear();
+        }
+    </script>
+</body>
+</html>
