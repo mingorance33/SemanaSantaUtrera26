@@ -7,91 +7,84 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
     <style>
         :root {
-            --primary-color: #5c2040; /* Burdeos Cofrade */
-            --bg-panel: rgba(20, 20, 20, 0.9);
+            --primary-color: #5c2040;
+            --bg-panel: rgba(20, 20, 20, 0.95);
             --text-color: #f0f0f0;
         }
 
-        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
+        body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; }
         #map { width: 100%; height: 100vh; }
 
-        /* Estilo del Panel Lateral */
+        /* Botón Flotante para el Menú */
+        #btn-toggle-menu {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 1001;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: background 0.3s;
+        }
+        #btn-toggle-menu:hover { background-color: #3d152a; }
+
+        /* Panel Lateral Animado */
         #panel {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 60px;
+            right: 15px;
             background: var(--bg-panel);
             color: var(--text-color);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             z-index: 1000;
-            max-width: 300px;
-            max-height: 90vh;
+            width: 280px;
+            max-height: calc(100vh - 100px);
             overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            transform: translateX(0); /* Abierto por defecto */
+            opacity: 1;
         }
 
-        #panel h1 { margin-top: 0; font-size: 22px; color: white; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
-        #panel h2 { font-size: 16px; margin-top: 20px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
+        #panel.oculto {
+            transform: translateX(120%); /* Se esconde a la derecha */
+            opacity: 0;
+            pointer-events: none;
+        }
 
-        /* Estilo de los Botones */
+        #panel h1 { margin-top: 0; font-size: 22px; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        #panel h2 { font-size: 15px; margin-top: 20px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
+
         .btn-ruta {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 12px;
-            background-color: transparent;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            text-align: left;
-            transition: all 0.2s ease;
+            display: flex; align-items: center; width: 100%; margin-bottom: 10px; padding: 12px;
+            background: transparent; color: white; border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px; cursor: pointer; font-weight: 600; text-align: left; transition: all 0.2s ease;
         }
-
-        .btn-ruta:hover {
-            background-color: var(--primary-color);
-            transform: translateY(-2px);
-            border-color: var(--primary-color);
-        }
-
-        .btn-ruta .color-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            margin-right: 12px;
-            border: 2px solid white;
-        }
-
-        .btn-clear {
-            background-color: #333;
-            color: #aaa;
-            margin-top: 20px;
-        }
+        .btn-ruta:hover { background-color: var(--primary-color); border-color: var(--primary-color); transform: translateY(-2px); }
+        .color-indicator { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 2px solid white; flex-shrink: 0; }
+        .btn-clear { background-color: #333; color: #aaa; margin-top: 20px; text-align: center; justify-content: center; }
         .btn-clear:hover { background-color: #444; color: white; }
-
     </style>
 </head>
 <body>
 
+    <button id="btn-toggle-menu" onclick="toggleMenu()">☰ Menú de Rutas</button>
+
     <div id="panel">
-        <h1>Utrera Sacra</h1>
-        <p style="font-size: 12px; text-align: center; color: #999;">Itinerarios Oficiales 2026</p>
+        <h1>Utrera Sacra 2026</h1>
         
         <h2>Domingo de Ramos</h2>
-        <button class="btn-ruta" onclick="dibujarRuta('trinidad', '#CC0000')">
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('trinidad', '#CC0000')">
             <div class="color-indicator" style="background-color: #CC0000;"></div>
             La Trinidad (Borriquita)
-        </button>
-
-        <h2>Lunes Santo</h2>
-        <button class="btn-ruta" onclick="dibujarRuta('muchachos', '#000080')">
-            <div class="color-indicator" style="background-color: #000080;"></div>
-            Muchachos (Esquema)
         </button>
 
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
@@ -101,74 +94,24 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
     <script>
-        // *** 1. DEFINICIÓN DE RUTAS ***
-        const rutas = {
-            // COORDENADAS OFICIALES EXTRAÍDAS DEL KML (Ida y Vuelta unidas)
-            trinidad: [
-                // IDA
-                [-5.7843259,37.1774388], [-5.784637,37.177661], [-5.7847926,37.1778106], [-5.784865,37.1778491],
-                [-5.7852003,37.1785394], [-5.7854551,37.1791356], [-5.7855946,37.1794391], [-5.7855436,37.179469],
-                [-5.7855088,37.1795032], [-5.7855088,37.1795694], [-5.7855195,37.1796036], [-5.7854229,37.1796806],
-                [-5.7852137,37.1797917], [-5.7850648,37.179828], [-5.7848811,37.1798643], [-5.7846317,37.1799285],
-                [-5.7843715,37.1800086], [-5.7849737,37.1803259], [-5.7850595,37.1803868], [-5.7851413,37.180421],
-                [-5.7851882,37.1804253], [-5.7851882,37.1804926], [-5.785199,37.1805225], [-5.7852191,37.1805471],
-                [-5.7852566,37.1805685], [-5.7852057,37.1806497], [-5.7851359,37.1807427], [-5.7850568,37.1808794],
-                [-5.7849777,37.1810312], [-5.7849053,37.1811968], [-5.7848811,37.181309], [-5.7848556,37.1814564],
-                [-5.7847886,37.181559], [-5.7847229,37.1815536], [-5.7846893,37.1815665], [-5.7846491,37.1816081],
-                [-5.7846397,37.1816381], [-5.7844976,37.1816498], [-5.7843661,37.1816103], [-5.7840778,37.1815248],
-                [-5.7838726,37.1814746], [-5.7838069,37.1814671], [-5.7835279,37.181497], [-5.7832517,37.1815216],
-                [-5.7829781,37.1815611], [-5.7827193,37.1815943], [-5.7825047,37.1816081], [-5.7822539,37.1815868],
-                [-5.7822633,37.1817257], [-5.782278,37.1819394], [-5.7822941,37.1820826], [-5.7823759,37.1825164],
-                [-5.7824014,37.1826018], [-5.7824953,37.1827803], [-5.7826602,37.1829886], [-5.7825074,37.1830912],
-                [-5.7823585,37.1831745], [-5.7821386,37.183275], [-5.7819843,37.1833455], [-5.7817885,37.183401],
-                [-5.7816397,37.1834502], [-5.7815713,37.183338], [-5.7815324,37.1832525],
-                // VUELTA
-                [-5.781405,37.1829993], [-5.7813326,37.1828647], [-5.7812843,37.1827151], [-5.7812306,37.1823903],
-                [-5.7812038,37.1822022], [-5.7811207,37.1819308], [-5.7810321,37.1816765], [-5.7809973,37.1815569],
-                [-5.7815793,37.181559], [-5.7818958,37.1815718], [-5.7819414,37.1811978], [-5.7817671,37.1811423],
-                [-5.7816839,37.1810867], [-5.7815552,37.1808965], [-5.7814808,37.1807864], [-5.7814201,37.1808238],
-                [-5.7812186,37.1809115], [-5.7810342,37.1806374], [-5.7808417,37.1804114], [-5.780257,37.1798836],
-                [-5.7806647,37.1796549], [-5.7809117,37.1795395], [-5.7811556,37.1794434], [-5.7815123,37.1792489],
-                [-5.7816383,37.1791869], [-5.7817349,37.1791421], [-5.7818046,37.1791057], [-5.7818529,37.1790849],
-                [-5.7819656,37.1790395], [-5.7819414,37.1789497], [-5.7821506,37.1789134], [-5.7824752,37.1788834],
-                [-5.7827917,37.1788322], [-5.7829821,37.1788044], [-5.7832181,37.1787403], [-5.7833201,37.1786911],
-                [-5.7835051,37.1785693], [-5.7833335,37.1782167], [-5.7834783,37.1781739], [-5.7839692,37.1779538],
-                [-5.7840335,37.1779367], [-5.7840791,37.1779501], [-5.7841167,37.1779795], [-5.7842159,37.1781141],
-                [-5.7843983,37.1782637], [-5.7845485,37.1784026], [-5.7847926,37.1786313], [-5.7848704,37.178689],
-                [-5.7849401,37.1786804], [-5.7850313,37.1786441], [-5.7851949,37.1785661], [-5.7849267,37.1780174],
-                [-5.7848489,37.1778598], [-5.7847806,37.1778192], [-5.7846176,37.1776701], [-5.784346,37.1774757],
-                [-5.7843273,37.1774404]
-            ],
-            
-            muchachos: [
-                [-5.76630, 37.19250], [-5.76750, 37.19100], [-5.77200, 37.18650], [-5.77700, 37.18050],
-                [-5.77950, 37.17800], [-5.78100, 37.17750], [-5.78200, 37.17850], [-5.78280, 37.18050],
-                [-5.78250, 37.18150], [-5.78180, 37.18100], [-5.78120, 37.18040], [-5.78015, 37.17950],
-                [-5.77900, 37.18150], [-5.77600, 37.18400], [-5.77200, 37.18650], [-5.76630, 37.19250]
-            ]
-        };
+        // --- Interfaz: Ocultar/Mostrar Menú ---
+        function toggleMenu() {
+            const panel = document.getElementById('panel');
+            panel.classList.toggle('oculto');
+        }
 
-        // *** 2. DEFINICIÓN DE TEMPLOS ***
+        // --- Configuración Inicial del Mapa ---
         const templos = [
             { nombre: "Capilla Trinidad", coord: [-5.7843273, 37.1774404] },
             { nombre: "Santuario Consolación", coord: [-5.76600, 37.19000] }
         ];
 
-        // *** 3. INICIALIZAR EL MAPA ***
         const map = new ol.Map({
             target: 'map',
-            layers: [
-                new ol.layer.Tile({
-                    source: new ol.source.OSM()
-                })
-            ],
-            view: new ol.View({
-                center: ol.proj.fromLonLat([-5.783, 37.180]),
-                zoom: 15.3
-            })
+            layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }) ],
+            view: new ol.View({ center: ol.proj.fromLonLat([-5.783, 37.180]), zoom: 15.3 })
         });
 
-        // *** 4. CAPAS VECTORIALES ***
         const rutaSource = new ol.source.Vector();
         const rutaLayer = new ol.layer.Vector({ source: rutaSource });
         map.addLayer(rutaLayer);
@@ -177,50 +120,76 @@
         const temploLayer = new ol.layer.Vector({ source: temploSource });
         map.addLayer(temploLayer);
 
-        // *** 5. AÑADIR MARCADORES DE TEMPLOS ***
+        // Marcadores de Templos
         templos.forEach(templo => {
-            const feature = new ol.Feature({
-                geometry: new ol.geom.Point(ol.proj.fromLonLat(templo.coord)),
-                name: templo.nombre
-            });
-
+            const feature = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(templo.coord)) });
             feature.setStyle(new ol.style.Style({
-                image: new ol.style.Circle({
-                    radius: 7,
-                    fill: new ol.style.Fill({ color: '#5c2040' }),
-                    stroke: new ol.style.Stroke({ color: 'white', width: 2 })
-                }),
-                text: new ol.style.Text({
-                    text: templo.nombre,
-                    offsetY: -18,
-                    fill: new ol.style.Fill({ color: '#000' }),
-                    backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.7)' }),
-                    padding: [2, 5, 2, 5],
-                    font: 'bold 12px Segoe UI'
-                })
+                image: new ol.style.Circle({ radius: 7, fill: new ol.style.Fill({ color: '#5c2040' }), stroke: new ol.style.Stroke({ color: 'white', width: 2 }) }),
+                text: new ol.style.Text({ text: templo.nombre, offsetY: -18, fill: new ol.style.Fill({ color: '#000' }), backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.8)' }), padding: [2, 5, 2, 5], font: 'bold 12px Segoe UI' })
             }));
-
             temploSource.addFeature(feature);
         });
 
-        // *** 6. FUNCIONES DE INTERACTIVIDAD ***
-        function dibujarRuta(hermandad, color) {
-            rutaSource.clear(); 
+        // --- Lógica: Cargar JSON Remoto y Dibujar ---
+        async function cargarYdibujarRuta(archivoJson, color) {
+            rutaSource.clear(); // Limpiamos la ruta anterior
 
-            if (!rutas[hermandad]) return;
+            try {
+                // Hacemos FETCH a la carpeta /data/
+                const respuesta = await fetch(`data/${archivoJson}.json`);
+                if (!respuesta.ok) throw new Error("Archivo no encontrado");
+                
+                const coordenadasCrudas = await respuesta.json();
+                
+                // Convertimos coordenadas a formato OpenLayers
+                const coordenadas = coordenadasCrudas.map(coord => ol.proj.fromLonLat(coord));
+                const linea = new ol.geom.LineString(coordenadas);
+                const feature = new ol.Feature({ geometry: linea });
 
-            const coordenadas = rutas[hermandad].map(coord => ol.proj.fromLonLat(coord));
-            const linea = new ol.geom.LineString(coordenadas);
-            const feature = new ol.Feature({ geometry: linea });
-            
-            feature.setStyle(new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: color, width: 5 }) 
-            }));
+                // DIBUJAR LÍNEA + FLECHAS
+                const estilos = [
+                    new ol.style.Style({
+                        stroke: new ol.style.Stroke({ color: color, width: 5 })
+                    })
+                ];
 
-            // Animación para que el mapa se centre en la ruta seleccionada
-            map.getView().fit(feature.getGeometry(), { padding: [50, 50, 50, 50], duration: 1000 });
+                // Generamos flechas a lo largo de los segmentos de la línea
+                linea.forEachSegment(function(start, end) {
+                    const dx = end[0] - start[0];
+                    const dy = end[1] - start[1];
+                    const longitud = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Solo dibujamos flecha si el tramo es suficientemente largo (evita amontonamiento)
+                    if (longitud > 30) { 
+                        const rotacion = -Math.atan2(dy, dx); // Ángulo para alinear la flecha
+                        const puntoMedio = [start[0] + dx / 2, start[1] + dy / 2];
 
-            rutaSource.addFeature(feature);
+                        estilos.push(new ol.style.Style({
+                            geometry: new ol.geom.Point(puntoMedio),
+                            // Usamos un icono de flecha SVG directamente
+                            image: new ol.style.Icon({
+                                src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="' + color + '" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>'),
+                                anchor: [0.5, 0.5],
+                                rotateWithView: true,
+                                rotation: rotacion
+                            })
+                        }));
+                    }
+                });
+
+                feature.setStyle(estilos);
+                rutaSource.addFeature(feature);
+
+                // Centrar y hacer zoom en la ruta cargada
+                map.getView().fit(linea, { padding: [50, 50, 50, 50], duration: 1000 });
+
+                // (Opcional) Ocultar menú en móviles al seleccionar ruta
+                if(window.innerWidth < 600) toggleMenu();
+
+            } catch (error) {
+                console.error("Error al cargar la ruta:", error);
+                alert(`No se pudo cargar la ruta de ${archivoJson}. ¿Aseguraste de crear el archivo en la carpeta data/?`);
+            }
         }
 
         function limpiarMapa() {
