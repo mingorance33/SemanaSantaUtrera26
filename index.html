@@ -15,51 +15,25 @@
         body, html { margin: 0; padding: 0; height: 100%; font-family: 'Segoe UI', Tahoma, sans-serif; overflow: hidden; }
         #map { width: 100%; height: 100vh; }
 
-        /* Botón Flotante para el Menú */
         #btn-toggle-menu {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 1001;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: background 0.3s;
+            position: absolute; top: 15px; right: 15px; z-index: 1001;
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 10px 15px; border-radius: 8px; font-size: 16px; font-weight: bold;
+            cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: background 0.3s;
         }
         #btn-toggle-menu:hover { background-color: #3d152a; }
 
-        /* Panel Lateral Animado */
         #panel {
-            position: absolute;
-            top: 60px;
-            right: 15px;
-            background: var(--bg-panel);
-            color: var(--text-color);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
-            z-index: 1000;
-            width: 280px;
-            max-height: calc(100vh - 160px);
-            overflow-y: auto;
+            position: absolute; top: 60px; right: 15px; background: var(--bg-panel);
+            color: var(--text-color); padding: 20px; border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5); z-index: 1000; width: 280px;
+            max-height: calc(100vh - 160px); overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-            transform: translateX(0);
-            opacity: 1;
+            transform: translateX(0); opacity: 1;
         }
 
-        #panel.oculto {
-            transform: translateX(120%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
+        #panel.oculto { transform: translateX(120%); opacity: 0; pointer-events: none; }
         #panel h1 { margin-top: 0; font-size: 22px; text-align: center; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
         #panel h2 { font-size: 15px; margin-top: 20px; color: #ccc; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -73,36 +47,17 @@
         .btn-clear { background-color: #333; color: #aaa; margin-top: 20px; text-align: center; justify-content: center; }
         .btn-clear:hover { background-color: #444; color: white; }
 
-        /* Selector de Capas Inferior */
         #layer-selector {
-            position: absolute;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px;
-            border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-            z-index: 1000;
-            display: flex;
-            gap: 5px;
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9); padding: 5px; border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 1000; display: flex; gap: 5px;
         }
 
         .btn-capa {
-            background: transparent;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            color: #333;
-            transition: all 0.2s;
+            background: transparent; border: none; padding: 8px 16px; border-radius: 20px;
+            cursor: pointer; font-weight: bold; color: #333; transition: all 0.2s;
         }
-
-        .btn-capa.activo {
-            background: var(--primary-color);
-            color: white;
-        }
+        .btn-capa.activo { background: var(--primary-color); color: white; }
     </style>
 </head>
 <body>
@@ -115,7 +70,11 @@
         <h2>Domingo de Ramos</h2>
         <button class="btn-ruta" onclick="cargarYdibujarRuta('trinidad', '#CC0000')">
             <div class="color-indicator" style="background-color: #CC0000;"></div>
-            La Trinidad (Borriquita)
+            La Trinidad
+        </button>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('huerto', '#800080')">
+            <div class="color-indicator" style="background-color: #800080;"></div>
+            Oración en el Huerto
         </button>
 
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
@@ -130,7 +89,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
     <script>
-        // --- Interfaz: Ocultar/Mostrar Menú ---
         function toggleMenu() {
             const panel = document.getElementById('panel');
             const btn = document.getElementById('btn-toggle-menu');
@@ -138,7 +96,6 @@
             btn.innerHTML = panel.classList.contains('oculto') ? '☰ Menú' : '✖ Cerrar';
         }
 
-        // --- Definición de Capas Base ---
         const capaOSM = new ol.layer.Tile({ source: new ol.source.OSM(), visible: true });
         const capaSatelite = new ol.layer.Tile({
             source: new ol.source.XYZ({
@@ -149,7 +106,6 @@
             visible: false 
         });
 
-        // --- Configuración Inicial del Mapa ---
         const map = new ol.Map({
             target: 'map',
             layers: [ capaOSM, capaSatelite ],
@@ -160,33 +116,35 @@
         const rutaLayer = new ol.layer.Vector({ source: rutaSource, zIndex: 2 });
         map.addLayer(rutaLayer);
 
-        // --- Diccionario de Hitos (Horarios y Puntos Clave) ---
-        // Aquí puedes ir añadiendo los horarios de cada nueva hermandad
+        // --- DICCIONARIO DE HITOS (Horarios y Puntos Clave) ---
         const hitosRutas = {
             'trinidad': [
-                { texto: 'Salida: 11:00 h\nRecogida: 14:15 h', coord: [-5.7843273, 37.1774404] }, // Capilla Trinidad
-                { texto: 'Ayuntamiento: 12:30 h', coord: [-5.7815418, 37.1832707] },            // Ayuntamiento extraído del KML
-                { texto: 'C. Oficial: 12:50 h', coord: [-5.7817818, 37.1815697] }               // Carrera Oficial extraída del KML
+                { texto: 'Salida: 11:00 h\nRecogida: 14:15 h', coord: [-5.7843273, 37.1774404] },
+                { texto: 'Ayuntamiento: 12:30 h', coord: [-5.7815418, 37.1832707] },
+                { texto: 'C. Oficial: 12:50 h', coord: [-5.7817818, 37.1815697] }
+            ],
+            // ¡Nuevos horarios exactos de la Oración en el Huerto añadidos aquí!
+            'huerto': [
+                { texto: 'Salida: 17:30 h\nRecogida: 22:00 h', coord: [-5.7781743, 37.1815953] }, // Capilla San Bartolomé
+                { texto: 'P. Santa María: 18:25 h', coord: [-5.7804615, 37.1793247] },
+                { texto: 'P. Santiago: 18:50 h', coord: [-5.7827085, 37.1808442] },
+                { texto: 'C. Oficial: 19:10 h', coord: [-5.7815954, 37.1815654] },
+                { texto: 'Ayuntamiento: 20:40 h', coord: [-5.7815605, 37.1833113] }
             ]
         };
 
-        // --- Función para cambiar el tipo de mapa ---
         function cambiarCapa(tipo) {
             document.getElementById('btn-normal').classList.remove('activo');
             document.getElementById('btn-satelite').classList.remove('activo');
-
             if (tipo === 'normal') {
-                capaOSM.setVisible(true);
-                capaSatelite.setVisible(false);
+                capaOSM.setVisible(true); capaSatelite.setVisible(false);
                 document.getElementById('btn-normal').classList.add('activo');
             } else {
-                capaOSM.setVisible(false);
-                capaSatelite.setVisible(true);
+                capaOSM.setVisible(false); capaSatelite.setVisible(true);
                 document.getElementById('btn-satelite').classList.add('activo');
             }
         }
 
-        // --- Lógica: Cargar JSON Remoto, Dibujar Línea, Flechas e HITOS ---
         async function cargarYdibujarRuta(archivoJson, color) {
             rutaSource.clear();
 
@@ -199,14 +157,10 @@
                 const linea = new ol.geom.LineString(coordenadas);
                 const featureLinea = new ol.Feature({ geometry: linea });
 
-                // 1. Estilo de la línea principal
                 const estilos = [
-                    new ol.style.Style({
-                        stroke: new ol.style.Stroke({ color: color, width: 5 })
-                    })
+                    new ol.style.Style({ stroke: new ol.style.Stroke({ color: color, width: 5 }) })
                 ];
 
-                // 2. Añadir flechas direccionales
                 linea.forEachSegment(function(start, end) {
                     const dx = end[0] - start[0];
                     const dy = end[1] - start[1];
@@ -215,14 +169,11 @@
                     if (longitud > 30) { 
                         const rotacion = -Math.atan2(dy, dx);
                         const puntoMedio = [start[0] + dx / 2, start[1] + dy / 2];
-
                         estilos.push(new ol.style.Style({
                             geometry: new ol.geom.Point(puntoMedio),
                             image: new ol.style.Icon({
                                 src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="' + color + '" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>'),
-                                anchor: [0.5, 0.5],
-                                rotateWithView: true,
-                                rotation: rotacion
+                                anchor: [0.5, 0.5], rotateWithView: true, rotation: rotacion
                             })
                         }));
                     }
@@ -231,40 +182,23 @@
                 featureLinea.setStyle(estilos);
                 rutaSource.addFeature(featureLinea);
 
-                // 3. Añadir los HITOS (Horarios) si existen para esta ruta
+                // Dibujar HITOS
                 if (hitosRutas[archivoJson]) {
                     hitosRutas[archivoJson].forEach(hito => {
-                        const featureHito = new ol.Feature({
-                            geometry: new ol.geom.Point(ol.proj.fromLonLat(hito.coord))
-                        });
-
+                        const featureHito = new ol.Feature({ geometry: new ol.geom.Point(ol.proj.fromLonLat(hito.coord)) });
                         featureHito.setStyle(new ol.style.Style({
-                            // Un pequeño círculo blanco con el borde del color de la hermandad
-                            image: new ol.style.Circle({
-                                radius: 5,
-                                fill: new ol.style.Fill({ color: '#ffffff' }),
-                                stroke: new ol.style.Stroke({ color: color, width: 2 })
-                            }),
-                            // El texto con el horario
+                            image: new ol.style.Circle({ radius: 5, fill: new ol.style.Fill({ color: '#ffffff' }), stroke: new ol.style.Stroke({ color: color, width: 2 }) }),
                             text: new ol.style.Text({
-                                text: hito.texto,
-                                offsetY: -20, // Lo subimos para que no tape el punto
-                                fill: new ol.style.Fill({ color: '#ffffff' }),
-                                backgroundFill: new ol.style.Fill({ color: color }),
-                                padding: [4, 8, 4, 8],
-                                font: 'bold 12px Segoe UI, sans-serif'
+                                text: hito.texto, offsetY: -20, fill: new ol.style.Fill({ color: '#ffffff' }),
+                                backgroundFill: new ol.style.Fill({ color: color }), padding: [4, 8, 4, 8], font: 'bold 12px Segoe UI, sans-serif'
                             })
                         }));
                         rutaSource.addFeature(featureHito);
                     });
                 }
 
-                // Centrar cámara
                 map.getView().fit(linea, { padding: [60, 60, 60, 60], duration: 1000 });
-
-                if (!document.getElementById('panel').classList.contains('oculto')) {
-                    toggleMenu();
-                }
+                if (!document.getElementById('panel').classList.contains('oculto')) toggleMenu();
 
             } catch (error) {
                 console.error("Error al cargar la ruta:", error);
@@ -272,9 +206,7 @@
             }
         }
 
-        function limpiarMapa() {
-            rutaSource.clear();
-        }
+        function limpiarMapa() { rutaSource.clear(); }
     </script>
 </body>
 </html>
