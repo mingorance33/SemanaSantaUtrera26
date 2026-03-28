@@ -54,6 +54,7 @@
             opacity: 1;
         }
 
+        /* Clase para ocultar el panel a la derecha */
         #panel.oculto {
             transform: translateX(120%);
             opacity: 0;
@@ -109,7 +110,7 @@
 
     <button id="btn-toggle-menu" onclick="toggleMenu()">☰ Menú</button>
 
-    <div id="panel">
+    <div id="panel" class="oculto">
         <h1>Utrera Sacra 2026</h1>
         
         <h2>Domingo de Ramos</h2>
@@ -133,22 +134,31 @@
         // --- Interfaz: Ocultar/Mostrar Menú ---
         function toggleMenu() {
             const panel = document.getElementById('panel');
+            const btn = document.getElementById('btn-toggle-menu');
+            
             panel.classList.toggle('oculto');
+            
+            // Cambiamos el texto del botón según el estado
+            if (panel.classList.contains('oculto')) {
+                btn.innerHTML = '☰ Menú';
+            } else {
+                btn.innerHTML = '✖ Cerrar';
+            }
         }
 
         // --- Definición de Capas Base ---
         const capaOSM = new ol.layer.Tile({
             source: new ol.source.OSM(),
-            visible: true // Visible por defecto
+            visible: true 
         });
 
         const capaSatelite = new ol.layer.Tile({
             source: new ol.source.XYZ({
                 url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                 maxZoom: 19,
-                attributions: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                attributions: 'Tiles &copy; Esri'
             }),
-            visible: false // Oculta por defecto
+            visible: false 
         });
 
         // --- Configuración Inicial del Mapa ---
@@ -159,11 +169,10 @@
 
         const map = new ol.Map({
             target: 'map',
-            layers: [ capaOSM, capaSatelite ], // Añadimos ambas capas base
+            layers: [ capaOSM, capaSatelite ],
             view: new ol.View({ center: ol.proj.fromLonLat([-5.783, 37.180]), zoom: 15.3 })
         });
 
-        // Capas vectoriales para las rutas y los marcadores (se añaden después para que queden por encima)
         const rutaSource = new ol.source.Vector();
         const rutaLayer = new ol.layer.Vector({ source: rutaSource });
         map.addLayer(rutaLayer);
@@ -244,7 +253,10 @@
 
                 map.getView().fit(linea, { padding: [50, 50, 50, 50], duration: 1000 });
 
-                if(window.innerWidth < 600) toggleMenu();
+                // Ocultamos el menú automáticamente al cargar una ruta
+                if (!document.getElementById('panel').classList.contains('oculto')) {
+                    toggleMenu();
+                }
 
             } catch (error) {
                 console.error("Error al cargar la ruta:", error);
