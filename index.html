@@ -46,16 +46,16 @@
             box-shadow: 0 8px 16px rgba(0,0,0,0.5);
             z-index: 1000;
             width: 280px;
-            max-height: calc(100vh - 100px);
+            max-height: calc(100vh - 160px);
             overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
-            transform: translateX(0); /* Abierto por defecto */
+            transform: translateX(0);
             opacity: 1;
         }
 
         #panel.oculto {
-            transform: translateX(120%); /* Se esconde a la derecha */
+            transform: translateX(120%);
             opacity: 0;
             pointer-events: none;
         }
@@ -72,11 +72,42 @@
         .color-indicator { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; border: 2px solid white; flex-shrink: 0; }
         .btn-clear { background-color: #333; color: #aaa; margin-top: 20px; text-align: center; justify-content: center; }
         .btn-clear:hover { background-color: #444; color: white; }
+
+        /* Selector de Capas Inferior */
+        #layer-selector {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 5px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            z-index: 1000;
+            display: flex;
+            gap: 5px;
+        }
+
+        .btn-capa {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .btn-capa.activo {
+            background: var(--primary-color);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
-    <button id="btn-toggle-menu" onclick="toggleMenu()">☰ Menú de Rutas</button>
+    <button id="btn-toggle-menu" onclick="toggleMenu()">☰ Menú</button>
 
     <div id="panel">
         <h1>Utrera Sacra 2026</h1>
@@ -90,6 +121,11 @@
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
     </div>
 
+    <div id="layer-selector">
+        <button id="btn-normal" class="btn-capa activo" onclick="cambiarCapa('normal')">Callejero</button>
+        <button id="btn-satelite" class="btn-capa" onclick="cambiarCapa('satelite')">Satélite</button>
+    </div>
+
     <div id="map"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
@@ -100,6 +136,21 @@
             panel.classList.toggle('oculto');
         }
 
+        // --- Definición de Capas Base ---
+        const capaOSM = new ol.layer.Tile({
+            source: new ol.source.OSM(),
+            visible: true // Visible por defecto
+        });
+
+        const capaSatelite = new ol.layer.Tile({
+            source: new ol.source.XYZ({
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                maxZoom: 19,
+                attributions: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }),
+            visible: false // Oculta por defecto
+        });
+
         // --- Configuración Inicial del Mapa ---
         const templos = [
             { nombre: "Capilla Trinidad", coord: [-5.7843273, 37.1774404] },
@@ -108,10 +159,11 @@
 
         const map = new ol.Map({
             target: 'map',
-            layers: [ new ol.layer.Tile({ source: new ol.source.OSM() }) ],
+            layers: [ capaOSM, capaSatelite ], // Añadimos ambas capas base
             view: new ol.View({ center: ol.proj.fromLonLat([-5.783, 37.180]), zoom: 15.3 })
         });
 
+        // Capas vectoriales para las rutas y los marcadores (se añaden después para que queden por encima)
         const rutaSource = new ol.source.Vector();
         const rutaLayer = new ol.layer.Vector({ source: rutaSource });
         map.addLayer(rutaLayer);
@@ -130,43 +182,53 @@
             temploSource.addFeature(feature);
         });
 
+        // --- Función para cambiar el tipo de mapa ---
+        function cambiarCapa(tipo) {
+            document.getElementById('btn-normal').classList.remove('activo');
+            document.getElementById('btn-satelite').classList.remove('activo');
+
+            if (tipo === 'normal') {
+                capaOSM.setVisible(true);
+                capaSatelite.setVisible(false);
+                document.getElementById('btn-normal').classList.add('activo');
+            } else {
+                capaOSM.setVisible(false);
+                capaSatelite.setVisible(true);
+                document.getElementById('btn-satelite').classList.add('activo');
+            }
+        }
+
         // --- Lógica: Cargar JSON Remoto y Dibujar ---
         async function cargarYdibujarRuta(archivoJson, color) {
-            rutaSource.clear(); // Limpiamos la ruta anterior
+            rutaSource.clear();
 
             try {
-                // Hacemos FETCH a la carpeta /data/
                 const respuesta = await fetch(`data/${archivoJson}.json`);
                 if (!respuesta.ok) throw new Error("Archivo no encontrado");
                 
                 const coordenadasCrudas = await respuesta.json();
                 
-                // Convertimos coordenadas a formato OpenLayers
                 const coordenadas = coordenadasCrudas.map(coord => ol.proj.fromLonLat(coord));
                 const linea = new ol.geom.LineString(coordenadas);
                 const feature = new ol.Feature({ geometry: linea });
 
-                // DIBUJAR LÍNEA + FLECHAS
                 const estilos = [
                     new ol.style.Style({
                         stroke: new ol.style.Stroke({ color: color, width: 5 })
                     })
                 ];
 
-                // Generamos flechas a lo largo de los segmentos de la línea
                 linea.forEachSegment(function(start, end) {
                     const dx = end[0] - start[0];
                     const dy = end[1] - start[1];
                     const longitud = Math.sqrt(dx * dx + dy * dy);
                     
-                    // Solo dibujamos flecha si el tramo es suficientemente largo (evita amontonamiento)
                     if (longitud > 30) { 
-                        const rotacion = -Math.atan2(dy, dx); // Ángulo para alinear la flecha
+                        const rotacion = -Math.atan2(dy, dx);
                         const puntoMedio = [start[0] + dx / 2, start[1] + dy / 2];
 
                         estilos.push(new ol.style.Style({
                             geometry: new ol.geom.Point(puntoMedio),
-                            // Usamos un icono de flecha SVG directamente
                             image: new ol.style.Icon({
                                 src: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="' + color + '" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>'),
                                 anchor: [0.5, 0.5],
@@ -180,15 +242,13 @@
                 feature.setStyle(estilos);
                 rutaSource.addFeature(feature);
 
-                // Centrar y hacer zoom en la ruta cargada
                 map.getView().fit(linea, { padding: [50, 50, 50, 50], duration: 1000 });
 
-                // (Opcional) Ocultar menú en móviles al seleccionar ruta
                 if(window.innerWidth < 600) toggleMenu();
 
             } catch (error) {
                 console.error("Error al cargar la ruta:", error);
-                alert(`No se pudo cargar la ruta de ${archivoJson}. ¿Aseguraste de crear el archivo en la carpeta data/?`);
+                alert(`No se pudo cargar la ruta de ${archivoJson}.`);
             }
         }
 
