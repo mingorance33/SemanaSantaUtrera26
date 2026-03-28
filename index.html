@@ -64,7 +64,7 @@
 
     <button id="btn-toggle-menu" onclick="toggleMenu()">☰ Menú</button>
 
-    <div id="panel" class="oculto">
+ <div id="panel" class="oculto">
         <h1>Utrera Sacra 2026</h1>
         
         <h2>Domingo de Ramos</h2>
@@ -75,6 +75,10 @@
         <button class="btn-ruta" onclick="cargarYdibujarRuta('huerto', '#800080')">
             <div class="color-indicator" style="background-color: #800080;"></div>
             Oración en el Huerto
+        </button>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('quinta', '#000000')">
+            <div class="color-indicator" style="background-color: #000000;"></div>
+            Quinta Angustia
         </button>
 
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
@@ -116,7 +120,7 @@
         const rutaLayer = new ol.layer.Vector({ source: rutaSource, zIndex: 2 });
         map.addLayer(rutaLayer);
 
-        // --- DICCIONARIO DE HITOS (Horarios y Puntos Clave) ---
+       
         // --- DICCIONARIO DE HITOS (Horarios y Puntos Clave) ---
         const hitosRutas = {
             'trinidad': [
@@ -126,11 +130,19 @@
             ],
             'huerto': [
                 { texto: 'Salida: 17:30 h\nRecogida: 22:00 h', coord: [-5.7781743, 37.1815953] },
-                // 👇 Esta es la única línea que ha cambiado 👇
                 { texto: 'P. Santa María: 18:25 h', coord: [-5.7809228, 37.1795512] },
                 { texto: 'P. Santiago: 18:50 h', coord: [-5.7827085, 37.1808442] },
                 { texto: 'C. Oficial: 19:10 h', coord: [-5.7815954, 37.1815654] },
                 { texto: 'Ayuntamiento: 20:40 h', coord: [-5.7815605, 37.1833113] }
+            ],
+            // ¡NUEVOS HITOS DE LA QUINTA ANGUSTIA!
+            'quinta': [
+                { texto: 'Salida: 17:30 h\nRecogida: 23:30 h', coord: [-5.7808899, 37.1793642] },  // Parroquia Santa María [cite: 14]
+                { texto: 'Convento H. de la Cruz: 18:10 h', coord: [-5.7815518, 37.1779432] }, // Convento Hermanas Cruz [cite: 16]
+                { texto: 'M. Santa Ángela: 18:50 h', coord: [-5.7821855, 37.1795032] },     // Monumento Santa Ángela [cite: 15]
+                { texto: 'Parroquia Santiago: 19:30 h', coord: [-5.7830546, 37.1807874] },  // Parroquia de Santiago [cite: 25]
+                { texto: 'C. Oficial: 20:00 h', coord: [-5.7818582, 37.1815766] },          // Carrera Oficial [cite: 18, 19]
+                { texto: 'Ayuntamiento: 21:30 h', coord: [-5.7815417, 37.183269] }          // Ayuntamiento [cite: 21]
             ]
         };
 
