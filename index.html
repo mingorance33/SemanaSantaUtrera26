@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Utrera Sacra: Itinerarios de Semana Santa 2026</title>
+    <title>Utrera Sacra: Itinerarios 2026</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v8.2.0/ol.css">
     <style>
         :root {
@@ -85,17 +85,17 @@
         <h2>Domingo de Ramos</h2>
         <button class="btn-ruta" onclick="dibujarRuta('trinidad', '#CC0000')">
             <div class="color-indicator" style="background-color: #CC0000;"></div>
-            La Trinidad (Borriquita)
+            La Trinidad (Borriquita) - ¡REAL!
         </button>
         <button class="btn-ruta" onclick="dibujarRuta('quinta', '#800080')">
             <div class="color-indicator" style="background-color: #800080;"></div>
-            Quinta Angustia
+            Quinta Angustia (Esquema)
         </button>
 
         <h2>Lunes Santo</h2>
         <button class="btn-ruta" onclick="dibujarRuta('muchachos', '#000080')">
             <div class="color-indicator" style="background-color: #000080;"></div>
-            Muchachos de Consolación
+            Muchachos (Esquema)
         </button>
 
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
@@ -105,41 +105,60 @@
 
     <script src="https://cdn.jsdelivr.net/npm/ol@v8.2.0/dist/ol.js"></script>
     <script>
-        // 1. Definición de Rutas Esquivmáticas (coordenadas para rellenar)
+        // *** 1. DEFINICIÓN DE RUTAS ***
+        // Para que las rutas sigan las calles, necesitamos UN PUNTO DE COORDENADAS PARA CADA GIRO.
         const rutas = {
-            trinidad: [ [-5.78326, 37.17685], [-5.78015, 37.17950], [-5.78250, 37.18150], [-5.78300, 37.18000], [-5.78326, 37.17685] ],
+            // RUTA DETALLADA (CALLE POR CALLE) PARA LA TRINIDAD (DOMINGO DE RAMOS)
+            trinidad: [
+                [-5.78326, 37.17685], // Salida: Capilla Trinidad (C/ Cristo Afligidos)
+                [-5.78315, 37.17765], // C/ Cristo Afligidos (giro)
+                [-5.78280, 37.17895], // C/ Resolana (giro)
+                [-5.78200, 37.17905], // Arco de la Villa
+                [-5.78160, 37.17915], // C/ San Fernando
+                [-5.78015, 37.17950], // Plaza Enrique de la Cuadra
+                [-5.78065, 37.17975], // C/ Catalina de Perea (giro)
+                [-5.78181, 37.17888], // Parroquia Santiago
+                [-5.78310, 37.17870], // C/ Sevilla (giro)
+                [-5.78320, 37.17950], // C/ Alcalde Fdez Heredia (giro)
+                [-5.78300, 37.18000], // C/ Clemente de la Cuadra (giro)
+                [-5.78280, 37.18055], // Ayuntamiento
+                [-5.78250, 37.18150], // Plaza del Altozano (Carrera Oficial)
+                [-5.78180, 37.18100], // C/ Perafán de Rivera (giro)
+                [-5.78120, 37.18040], // C/ La Plaza (giro)
+                [-5.78065, 37.17975], // Catalina de Perea / Ponce de León
+                [-5.78110, 37.17880], // C/ Virgen del Rocío (giro)
+                [-5.78250, 37.17780], // C/ Virgen del Rocío (recta)
+                [-5.78315, 37.17765], // Giro a Cristo Afligidos
+                [-5.78326, 37.17685]  // Entrada: Capilla Trinidad
+            ],
+            // OTRAS RUTAS (Placeholder - Esquemáticas, necesitan rellenarse con puntos detallados)
             quinta: [ [-5.78010, 37.18200], [-5.77900, 37.18000], [-5.78250, 37.18150], [-5.78010, 37.18200] ],
             muchachos: [ [-5.76600, 37.19000], [-5.78015, 37.17950], [-5.78250, 37.18150], [-5.78300, 37.18000], [-5.76600, 37.19000] ]
         };
 
-        // 2. Definición de Templos Clave (Marcadores)
+        // *** 2. DEFINICIÓN DE TEMPLOS ***
         const templos = [
-            { nombre: "Cplla. Trinidad", coord: [-5.78326, 37.17685] },
+            { nombre: "Capilla Trinidad", coord: [-5.78326, 37.17685] },
             { nombre: "Parroquia Sta. María", coord: [-5.78010, 37.18200] },
             { nombre: "Parroquia Santiago", coord: [-5.78181, 37.17888] },
-            { nombre: "Cplla. San Francisco", coord: [-5.78250, 37.18150] }, // Plaza Altozano
-            { nombre: "Cplla. San Bartolomé", coord: [-5.7805, 37.1746] },
             { nombre: "Santuario Consolación", coord: [-5.76600, 37.19000] }
         ];
 
-        // 3. Inicializar el mapa con estilo elegante (Toner)
+        // *** 3. INICIALIZAR EL MAPA (USAMOS OSM PARA GARANTIZAR VISIBILIDAD) ***
         const map = new ol.Map({
             target: 'map',
             layers: [
                 new ol.layer.Tile({
-                    source: new ol.source.XYZ({
-                        url: 'https://stamen-tiles.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', // Estilo Toner B&W
-                        attributions: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.1">CC BY 3.1</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.'
-                    })
+                    source: new ol.source.OSM() // Capa base gratuita y visible
                 })
             ],
             view: new ol.View({
                 center: ol.proj.fromLonLat([-5.783, 37.180]),
-                zoom: 15
+                zoom: 15.3
             })
         });
 
-        // 4. Capas vectoriales (para líneas y marcadores)
+        // *** 4. CAPAS VECTORIALES ***
         const rutaSource = new ol.source.Vector();
         const rutaLayer = new ol.layer.Vector({ source: rutaSource });
         map.addLayer(rutaLayer);
@@ -148,7 +167,7 @@
         const temploLayer = new ol.layer.Vector({ source: temploSource });
         map.addLayer(temploLayer);
 
-        // 5. Añadir Marcadores de Templos
+        // *** 5. AÑADIR MARCADORES DE TEMPLOS ***
         templos.forEach(templo => {
             const feature = new ol.Feature({
                 geometry: new ol.geom.Point(ol.proj.fromLonLat(templo.coord)),
@@ -157,23 +176,24 @@
 
             feature.setStyle(new ol.style.Style({
                 image: new ol.style.Circle({
-                    radius: 6,
+                    radius: 7,
                     fill: new ol.style.Fill({ color: '#5c2040' }),
                     stroke: new ol.style.Stroke({ color: 'white', width: 2 })
                 }),
                 text: new ol.style.Text({
                     text: templo.nombre,
-                    offsetY: -15,
-                    fill: new ol.style.Fill({ color: '#333' }),
-                    backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.8)' }),
-                    padding: [2, 4, 2, 4]
+                    offsetY: -18,
+                    fill: new ol.style.Fill({ color: '#000' }),
+                    backgroundFill: new ol.style.Fill({ color: 'rgba(255,255,255,0.7)' }),
+                    padding: [2, 5, 2, 5],
+                    font: 'bold 12px Segoe UI'
                 })
             }));
 
             temploSource.addFeature(feature);
         });
 
-        // 6. Funciones de Interactividad
+        // *** 6. FUNCIONES DE INTERACTIVIDAD ***
         function dibujarRuta(hermandad, color) {
             rutaSource.clear(); 
 
@@ -184,7 +204,7 @@
             const feature = new ol.Feature({ geometry: linea });
             
             feature.setStyle(new ol.style.Style({
-                stroke: new ol.style.Stroke({ color: color, width: 5 }) // Línea más gruesa
+                stroke: new ol.style.Stroke({ color: color, width: 5 }) 
             }));
 
             rutaSource.addFeature(feature);
