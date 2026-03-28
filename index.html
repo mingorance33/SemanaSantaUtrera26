@@ -80,7 +80,11 @@
             <div class="color-indicator" style="background-color: #000000;"></div>
             Quinta Angustia
         </button>
-
+        <h2>Lunes Santo</h2>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('muchachos', '#000080')">
+            <div class="color-indicator" style="background-color: #000080;"></div>
+            Muchachos de Consolación
+        </button>
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
     </div>
 
@@ -143,7 +147,22 @@
                 { texto: 'Parroquia Santiago: 19:30 h', coord: [-5.7830546, 37.1807874] },  // Parroquia de Santiago [cite: 25]
                 { texto: 'C. Oficial: 20:00 h', coord: [-5.7818582, 37.1815766] },          // Carrera Oficial [cite: 18, 19]
                 { texto: 'Ayuntamiento: 21:30 h', coord: [-5.7815417, 37.183269] }          // Ayuntamiento [cite: 21]
+            ],
+            // ... (hitos de trinidad, huerto y quinta) ...
+            'quinta': [
+                { texto: 'Salida: 17:30 h\nRecogida: 23:30 h', coord: [-5.7808899, 37.1793642] },
+                { texto: 'Convento H. de la Cruz: 18:10 h', coord: [-5.7815518, 37.1779432] },
+                { texto: 'M. Santa Ángela: 18:50 h', coord: [-5.7821855, 37.1795032] },
+                { texto: 'Parroquia Santiago: 19:30 h', coord: [-5.7830546, 37.1807874] },
+                { texto: 'C. Oficial: 20:00 h', coord: [-5.7818582, 37.1815766] },
+                { texto: 'Ayuntamiento: 21:30 h', coord: [-5.7815417, 37.183269] }
+            ],
+            // ¡NUEVOS HITOS DEL LUNES SANTO!
+            'muchachos': [
+                { texto: 'Salida: 18:00 h\nRecogida: 00:45 h', coord: [-5.7674099, 37.1920214] },  // Santuario
+                { texto: 'C. Oficial: 21:30 h', coord: [-5.7816417, 37.1815659] }              // Carrera Oficial
             ]
+        };
         };
 
         function cambiarCapa(tipo) {
