@@ -91,7 +91,13 @@
             <div class="color-indicator" style="background-color: #A30000;"></div>
             Los Estudiantes
         </button>
-    </div>
+         <h2>Miércoles Santo</h2>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('aceituneros', '#006400')">
+            <div class="color-indicator" style="background-color: #006400;"></div>
+            Los Aceituneros
+        </button>
+
+ </div>
 
     <div id="layer-selector">
         <button id="btn-normal" class="btn-capa activo" onclick="cambiarCapa('normal')">Callejero</button>
@@ -172,6 +178,13 @@
                 { texto: 'Salida: 19:00 h\nRecogida: 00:00 h', coord: [-5.7782574, 37.1821568] },  // Basílica María Auxiliadora
                 { texto: 'Ayuntamiento: 20:00 h', coord: [-5.7815498, 37.1833006] },              // Ayuntamiento
                 { texto: 'C. Oficial: 23:00 h', coord: [-5.7815706, 37.1815638] }                 // Carrera Oficial
+            ],
+            // ¡NUEVOS HITOS DEL MIÉRCOLES SANTO!
+            'aceituneros': [
+                { texto: 'Salida: 19:00 h\nRecogida: 00:00 h', coord: [-5.7809957, 37.1793019] },
+                { texto: 'P. Santiago: 20:30 h', coord: [-5.7831323, 37.1807768] },
+                { texto: 'C. Oficial: 20:45 h', coord: [-5.7814211, 37.1815675] },
+                { texto: 'Ayuntamiento: 22:15 h', coord: [-5.7815485, 37.1833124] }
             ]
         
         };
