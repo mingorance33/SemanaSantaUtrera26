@@ -96,7 +96,11 @@
             <div class="color-indicator" style="background-color: #006400;"></div>
             Los Aceituneros
         </button>
-
+        <h2>Jueves Santo</h2>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('trinidad_jueves', '#8B0000')">
+            <div class="color-indicator" style="background-color: #8B0000;"></div>
+            Trinidad (Jueves Santo)
+        </button>
  </div>
 
     <div id="layer-selector">
@@ -185,6 +189,13 @@
                 { texto: 'P. Santiago: 20:30 h', coord: [-5.7831323, 37.1807768] },
                 { texto: 'C. Oficial: 20:45 h', coord: [-5.7814211, 37.1815675] },
                 { texto: 'Ayuntamiento: 22:15 h', coord: [-5.7815485, 37.1833124] }
+            ],
+            // ¡NUEVOS HITOS DEL JUEVES SANTO!
+            'trinidad_jueves': [
+                { texto: 'Salida: 19:00 h\nRecogida: 00:15 h', coord: [-5.7833214, 37.1767496] },  // Capilla de la Trinidad
+                { texto: 'P. Santiago', coord: [-5.7828372, 37.1808175] },                       // Parroquia de Santiago
+                { texto: 'Ayuntamiento: 22:00 h', coord: [-5.7815284, 37.1832621] },             // Ayuntamiento
+                { texto: 'C. Oficial: 22:25 h', coord: [-5.7814747, 37.1815718] }                // Carrera Oficial
             ]
         
         };
