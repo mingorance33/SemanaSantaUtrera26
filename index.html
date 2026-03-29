@@ -86,6 +86,11 @@
             Muchachos de Consolación
         </button>
         <button class="btn-ruta btn-clear" onclick="limpiarMapa()">Limpiar Mapa</button>
+         <h2>Martes Santo</h2>
+        <button class="btn-ruta" onclick="cargarYdibujarRuta('estudiantes', '#A30000')">
+            <div class="color-indicator" style="background-color: #A30000;"></div>
+            Los Estudiantes
+        </button>
     </div>
 
     <div id="layer-selector">
@@ -161,6 +166,12 @@
             'muchachos': [
                 { texto: 'Salida: 18:00 h\nRecogida: 00:45 h', coord: [-5.7674099, 37.1920214] },  // Santuario
                 { texto: 'C. Oficial: 21:30 h', coord: [-5.7816417, 37.1815659] }              // Carrera Oficial
+            ],
+            // ¡NUEVOS HITOS DEL MARTES SANTO!
+            'estudiantes': [
+                { texto: 'Salida: 19:00 h\nRecogida: 00:00 h', coord: [-5.7782574, 37.1821568] },  // Basílica María Auxiliadora
+                { texto: 'Ayuntamiento: 20:00 h', coord: [-5.7815498, 37.1833006] },              // Ayuntamiento
+                { texto: 'C. Oficial: 23:00 h', coord: [-5.7815706, 37.1815638] }                 // Carrera Oficial
             ]
         
         };
